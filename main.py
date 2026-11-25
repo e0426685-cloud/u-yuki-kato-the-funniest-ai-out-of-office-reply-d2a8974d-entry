@@ -2,6 +2,11 @@
 
 Writes one line - the out-of-office auto-reply of an AI agent heading off
 on vacation - to /output/entry.txt. Stdlib only.
+
+The single ENTRY string is checked by validate() before it is written:
+it must be non-blank text, 1-160 characters long, on one line, with no
+control characters, newlines, or DEL characters. The validated line is
+then written to /output/entry.txt with world-readable permissions.
 """
 
 import os
@@ -16,6 +21,10 @@ def validate(text):
         raise ValueError("entry must not be only whitespace")
     if any(ord(c) < 32 for c in text):
         raise ValueError("entry must be a single line with no control characters")
+    if "\n" in text or "\r" in text:
+        raise ValueError("entry must be a single line with no newlines")
+    if any(ord(c) == 127 for c in text):
+        raise ValueError("entry must not contain DEL characters")
     if not (1 <= len(text) <= 160):
         raise ValueError("entry must be 1-160 characters")
     return text
